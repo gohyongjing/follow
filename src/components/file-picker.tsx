@@ -1,10 +1,16 @@
-"use client";
+'use client';
 
-import { useState, useRef, useCallback } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Upload, File, X, CheckCircle } from "lucide-react";
+import { useState, useRef, useCallback } from 'react';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Upload, File, X, CheckCircle } from 'lucide-react';
 
 interface FilePickerProps {
   onFileSelect: (file: File) => void;
@@ -22,22 +28,25 @@ export function FilePicker({ onFileSelect, className }: FilePickerProps) {
       setError('Please select a ZIP file');
       return false;
     }
-    
-    if (file.size > 100 * 1024 * 1024) { 
+
+    if (file.size > 100 * 1024 * 1024) {
       setError('File size must be less than 100MB');
       return false;
     }
-    
+
     setError(null);
     return true;
   };
 
-  const handleFileSelect = useCallback((file: File) => {
-    if (validateFile(file)) {
-      setSelectedFile(file);
-      onFileSelect(file);
-    }
-  }, [onFileSelect]);
+  const handleFileSelect = useCallback(
+    (file: File) => {
+      if (validateFile(file)) {
+        setSelectedFile(file);
+        onFileSelect(file);
+      }
+    },
+    [onFileSelect]
+  );
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -59,7 +68,7 @@ export function FilePicker({ onFileSelect, className }: FilePickerProps) {
   const handleDrop = (event: React.DragEvent) => {
     event.preventDefault();
     setIsDragOver(false);
-    
+
     const file = event.dataTransfer.files[0];
     if (file) {
       handleFileSelect(file);
@@ -91,7 +100,7 @@ export function FilePicker({ onFileSelect, className }: FilePickerProps) {
       </CardHeader>
       <CardContent>
         <div
-          className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+          className={`rounded-lg border-2 border-dashed p-6 text-center transition-colors ${
             isDragOver
               ? 'border-primary bg-primary/5'
               : 'border-muted-foreground/25 hover:border-muted-foreground/50'
@@ -106,10 +115,10 @@ export function FilePicker({ onFileSelect, className }: FilePickerProps) {
                 <CheckCircle className="h-5 w-5" />
                 <span className="font-medium">File selected successfully!</span>
               </div>
-              <div className="flex items-center justify-center gap-2 p-3 bg-muted rounded-md">
+              <div className="bg-muted flex items-center justify-center gap-2 rounded-md p-3">
                 <File className="h-4 w-4" />
                 <span className="text-sm">{selectedFile.name}</span>
-                <span className="text-xs text-muted-foreground">
+                <span className="text-muted-foreground text-xs">
                   ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
                 </span>
               </div>
@@ -125,28 +134,28 @@ export function FilePicker({ onFileSelect, className }: FilePickerProps) {
             </div>
           ) : (
             <div className="space-y-4">
-              <Upload className="h-12 w-12 mx-auto text-muted-foreground" />
+              <Upload className="text-muted-foreground mx-auto h-12 w-12" />
               <div>
-                <p className="text-sm text-muted-foreground mb-2">
+                <p className="text-muted-foreground mb-2 text-sm">
                   Drop your ZIP file here, or
                 </p>
                 <Button onClick={handleButtonClick} variant="outline">
                   Browse Files
                 </Button>
               </div>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 Maximum file size: 100MB
               </p>
             </div>
           )}
-          
+
           {error && (
-            <div className="mt-4 p-3 bg-destructive/10 border border-destructive/20 rounded-md">
-              <p className="text-sm text-destructive">{error}</p>
+            <div className="bg-destructive/10 border-destructive/20 mt-4 rounded-md border p-3">
+              <p className="text-destructive text-sm">{error}</p>
             </div>
           )}
         </div>
-        
+
         <Input
           ref={fileInputRef}
           type="file"
