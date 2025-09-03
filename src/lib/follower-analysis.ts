@@ -12,6 +12,7 @@ export const extractFollowersAndFollowing = async (
 
   // Look for common file patterns in social media data exports
   const fileNames = Object.keys(zipContent.files);
+
   // Try to find followers and following files (including nested directories)
   const followersFile = fileNames.find(
     name =>
@@ -27,7 +28,7 @@ export const extractFollowersAndFollowing = async (
 
   const followingFile = fileNames.find(
     name =>
-      name.toLowerCase().includes('following') &&
+      name.toLowerCase().endsWith('following.json') &&
       name.endsWith('.json') &&
       !name.includes('__MACOSX') &&
       !name.includes('/._') &&

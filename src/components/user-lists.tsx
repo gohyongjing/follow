@@ -24,8 +24,9 @@ export function UserLists({ comparisonResult }: UserListsProps) {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
-              <UserX className="h-5 w-5 text-red-600" />
-              Not Following Back ({comparisonResult.notFollowingBack.length})
+              <UserCheck className="h-5 w-5 text-green-600" />
+              You Don&apos;t Follow Back (
+              {comparisonResult.notFollowingBack.length})
             </CardTitle>
             <Button
               variant="outline"
@@ -53,7 +54,7 @@ export function UserLists({ comparisonResult }: UserListsProps) {
               </div>
             ) : (
               <p className="text-muted-foreground py-4 text-center">
-                Everyone you follow follows you back!
+                You follow everyone back!
               </p>
             )}
           </div>
@@ -64,8 +65,8 @@ export function UserLists({ comparisonResult }: UserListsProps) {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
-              <UserCheck className="h-5 w-5 text-green-600" />
-              You Don&apos;t Follow Back (
+              <UserX className="h-5 w-5 text-red-600" />
+              They Don&apos;t Follow Back (
               {comparisonResult.notFollowedBack.length})
             </CardTitle>
             <Button
@@ -94,7 +95,7 @@ export function UserLists({ comparisonResult }: UserListsProps) {
               </div>
             ) : (
               <p className="text-muted-foreground py-4 text-center">
-                You follow everyone who follows you!
+                Everyone you follow follows you back!
               </p>
             )}
           </div>
