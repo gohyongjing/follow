@@ -163,7 +163,9 @@ The tool searches for files with these patterns:
 ### Analysis Results
 
 - **Stats Cards**: Total counts and percentages
-- **User Lists**: Scrollable lists of users
+- **User Lists**: Scrollable lists of users who don't follow back
+- **Follower Lists**: Complete followers and following lists with search
+- **Export Buttons**: Download any list as CSV files
 - **Color Coding**: Red for not following back, green for mutual, etc.
 
 ## 🔒 Security & Privacy

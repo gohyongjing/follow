@@ -5,8 +5,13 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { UserCheck, UserX } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { UserCheck, UserX, Download } from 'lucide-react';
 import { ComparisonResult } from '@/types/follower-analysis';
+import {
+  exportNotFollowingBack,
+  exportNotFollowedBack,
+} from '@/lib/export-utils';
 
 interface UserListsProps {
   comparisonResult: ComparisonResult;
@@ -17,10 +22,21 @@ export function UserLists({ comparisonResult }: UserListsProps) {
     <div className="mt-8 grid gap-6 md:grid-cols-2">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <UserX className="h-5 w-5 text-red-600" />
-            Not Following Back ({comparisonResult.notFollowingBack.length})
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <UserX className="h-5 w-5 text-red-600" />
+              Not Following Back ({comparisonResult.notFollowingBack.length})
+            </CardTitle>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => exportNotFollowingBack(comparisonResult)}
+              className="flex items-center gap-2"
+            >
+              <Download className="h-4 w-4" />
+              Export
+            </Button>
+          </div>
           <CardDescription>
             Users who follow you but you don&apos;t follow back
           </CardDescription>
@@ -46,11 +62,22 @@ export function UserLists({ comparisonResult }: UserListsProps) {
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <UserCheck className="h-5 w-5 text-green-600" />
-            You Don&apos;t Follow Back (
-            {comparisonResult.notFollowedBack.length})
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <UserCheck className="h-5 w-5 text-green-600" />
+              You Don&apos;t Follow Back (
+              {comparisonResult.notFollowedBack.length})
+            </CardTitle>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => exportNotFollowedBack(comparisonResult)}
+              className="flex items-center gap-2"
+            >
+              <Download className="h-4 w-4" />
+              Export
+            </Button>
+          </div>
           <CardDescription>
             Users you follow but they don&apos;t follow you back
           </CardDescription>

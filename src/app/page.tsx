@@ -51,7 +51,10 @@ export default function Home() {
         {error && <ErrorCard error={error} />}
 
         {comparisonResult && (
-          <AnalysisResults comparisonResult={comparisonResult} />
+          <AnalysisResults
+            key={JSON.stringify(comparisonResult)}
+            comparisonResult={comparisonResult}
+          />
         )}
 
         <div className="mt-8 text-center">

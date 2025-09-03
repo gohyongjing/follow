@@ -14,10 +14,8 @@ export const useFollowerAnalysis = () => {
     setComparisonResult(null);
 
     try {
-      console.log('Processing file:', file.name);
       const result = await extractFollowersAndFollowing(file);
       setComparisonResult(result);
-      console.log('Comparison result:', result);
     } catch (err) {
       console.error('Error processing file:', err);
       setError(

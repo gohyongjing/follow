@@ -12,46 +12,44 @@ export const extractFollowersAndFollowing = async (
 
   // Look for common file patterns in social media data exports
   const fileNames = Object.keys(zipContent.files);
-  console.log('Files in ZIP:', fileNames);
-
   // Try to find followers and following files (including nested directories)
   const followersFile = fileNames.find(
     name =>
-      (name.toLowerCase().includes('followers') ||
-        name.toLowerCase().includes('follower')) &&
+      (name.toLowerCase().includes('followers_') ||
+        name.toLowerCase().endsWith('followers.json')) &&
       name.endsWith('.json') &&
       !name.includes('__MACOSX') &&
-      !name.includes('/._')
+      !name.includes('/._') &&
+      !name.includes('follow_requests') &&
+      !name.includes('recently_unfollowed') &&
+      !name.includes('close_friends')
   );
 
   const followingFile = fileNames.find(
     name =>
-      (name.toLowerCase().includes('following') ||
-        name.toLowerCase().includes('follows')) &&
+      name.toLowerCase().includes('following') &&
       name.endsWith('.json') &&
       !name.includes('__MACOSX') &&
-      !name.includes('/._')
+      !name.includes('/._') &&
+      !name.includes('follow_requests') &&
+      !name.includes('recently_unfollowed') &&
+      !name.includes('close_friends')
   );
-
-  console.log('Found followers file:', followersFile);
-  console.log('Found following file:', followingFile);
 
   if (followersFile) {
     const followersContent =
       await zipContent.files[followersFile].async('string');
     followers = parseUserList(followersContent);
-    console.log(`Parsed ${followers.length} followers from ${followersFile}`);
   }
 
   if (followingFile) {
     const followingContent =
       await zipContent.files[followingFile].async('string');
     following = parseUserList(followingContent);
-    console.log(`Parsed ${following.length} following from ${followingFile}`);
   }
 
   // If we couldn't find specific files, try to parse all JSON files
-  if (followers.length === 0 || following.length === 0) {
+  if (!followersFile || !followingFile) {
     for (const fileName of fileNames) {
       if (
         fileName.endsWith('.json') &&
@@ -60,10 +58,8 @@ export const extractFollowersAndFollowing = async (
         !fileName.includes('.DS_Store')
       ) {
         try {
-          console.log('Trying to parse file:', fileName);
           const content = await zipContent.files[fileName].async('string');
           const users = parseUserList(content);
-          console.log(`Parsed ${users.length} users from ${fileName}`);
 
           // Try to determine if this is followers or following based on file name or content
           if (
@@ -95,7 +91,7 @@ export const extractFollowersAndFollowing = async (
     follower => !following.includes(follower)
   );
   const notFollowedBack = following.filter(
-    following => !followers.includes(following)
+    followedUser => !followers.includes(followedUser)
   );
   const mutualFollowers = followers.filter(follower =>
     following.includes(follower)
@@ -109,69 +105,42 @@ export const extractFollowersAndFollowing = async (
     mutualFollowers,
   };
 };
-
 export const parseUserList = (content: string): string[] => {
-  // First, try to clean the content by removing null bytes and other binary artifacts
-  const cleanedContent = content
-    .replace(/\u0000/g, '') // Remove null bytes
-    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]/g, '') // Remove other control characters
-    .trim();
-
-  // If the content is still mostly binary, try to extract readable text
-  if (
-    cleanedContent.length < 10 ||
-    /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]/.test(cleanedContent)
-  ) {
-    console.warn('Content appears to be binary, attempting to extract text...');
-    // Try to find any readable text patterns
-    const textMatches = cleanedContent.match(/[a-zA-Z0-9_@.-]+/g);
-    if (textMatches) {
-      return textMatches.filter(
-        username =>
-          username.length > 1 &&
-          !username.match(/^(com\.apple|Mac OS X|ATTR|quarantine)$/i)
-      );
-    }
-    return [];
-  }
-
-  const lines = cleanedContent.split('\n').filter(line => line.trim());
   const users: string[] = [];
 
-  for (const line of lines) {
-    // Try different parsing strategies
-    let username = '';
+  try {
+    // Parse as JSON
+    const jsonData = JSON.parse(content);
 
-    // JSON format
-    try {
-      const jsonData = JSON.parse(line);
-      if (jsonData.username) username = jsonData.username;
-      else if (jsonData.user) username = jsonData.user;
-      else if (jsonData.name) username = jsonData.name;
-      else if (jsonData.value) username = jsonData.value;
-    } catch {
-      // Not JSON, try CSV or plain text
-      const parts = line.split(',');
-      if (parts.length > 0) {
-        username = parts[0].trim().replace(/['"]/g, '');
-      } else {
-        username = line.trim();
+    // Handle Instagram's specific structure
+    if (
+      jsonData.relationships_following &&
+      Array.isArray(jsonData.relationships_following)
+    ) {
+      // This is the following file structure
+      for (const item of jsonData.relationships_following) {
+        if (item.string_list_data && Array.isArray(item.string_list_data)) {
+          for (const dataItem of item.string_list_data) {
+            if (dataItem.value && typeof dataItem.value === 'string') {
+              users.push(dataItem.value);
+            }
+          }
+        }
+      }
+    } else if (Array.isArray(jsonData)) {
+      // This is the followers file structure (direct array)
+      for (const item of jsonData) {
+        if (item.string_list_data && Array.isArray(item.string_list_data)) {
+          for (const dataItem of item.string_list_data) {
+            if (dataItem.value && typeof dataItem.value === 'string') {
+              users.push(dataItem.value);
+            }
+          }
+        }
       }
     }
-
-    // Clean the username
-    username = username
-      .replace(/[^\w@.-]/g, '') // Remove special characters except @, ., -
-      .trim();
-
-    if (
-      username &&
-      username.length > 1 &&
-      !users.includes(username) &&
-      !username.match(/^(com\.apple|Mac OS X|ATTR|quarantine|q\/|Chrome)$/i)
-    ) {
-      users.push(username);
-    }
+  } catch (error) {
+    console.warn('Failed to parse JSON:', error);
   }
 
   return users;
